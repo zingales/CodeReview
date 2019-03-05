@@ -3,8 +3,6 @@ import sys
 import logging
 import time
 
-from git import Repo
-
 from environment import Environment
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,7 +17,7 @@ if __name__ == "__main__":
     # initial_commit = "39a14af872598b727a06ba87722edf4918dbedee"
     # code_path = os.path.dirname(os.path.abspath(__file__))
 
-    env = Environment(Repo(code_path))
+    env = Environment(code_path)
 
     print("to return to working dir just type revert")
     while True:

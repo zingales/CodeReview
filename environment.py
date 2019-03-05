@@ -1,4 +1,5 @@
 import logging
+from git import Repo
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ def gen_switch_event(destination_id):
 
 class Environment(object):
 
-    def __init__(self, repo):
-        self.repo = repo
+    def __init__(self, git_path):
+        self.repo = Repo(git_path)
         self.history = []
         self.starting_branch = None
 
@@ -49,6 +50,9 @@ class Environment(object):
 
     def gen_stash_name(self, source_id, destination_id):
         return "{0}->{1}".format(source_id, destination_id)
+
+    def stash_name_to_stash_index(stash_name):
+        pass
 
     def prepare_working_dir(self):
         self.repo.git.checkout(self.starting_branch)
