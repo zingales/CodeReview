@@ -14,6 +14,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def assert_head_reference(env, branch, hash, is_detached=False):
+    assert str(env.repo.head.commit) == hash, "head hash is not what was expected: Expected {0}, actual {1}".format(
+        hash, env.repo.head.commit)
+    if not is_detached:
+        assert str(env.repo.head.ref) == branch, "head branch is not what was expected: Expected {0}, actual {1}".format(
+            branch, env.repo.head.ref)
+
+
 class TestRepos(unittest.TestCase):
 
     @classmethod
@@ -53,6 +61,8 @@ class TestRepos(unittest.TestCase):
         env = Environment(dir_path)
         env.switch_to("branch_b")
         env.prepare_working_dir()
+        assert_head_reference(
+            env, 'master', 'e6a5ec02969059cd89375f60382c1ba11135dd08')
 
     def test_switching_with_clean_repo_with_stashes(self):
         dir_path = os.path.join(
@@ -60,6 +70,17 @@ class TestRepos(unittest.TestCase):
         env = Environment(dir_path)
         env.switch_to("branch_b")
         env.prepare_working_dir()
+        assert_head_reference(
+            env, 'master', 'e6a5ec02969059cd89375f60382c1ba11135dd08')
+
+    def test_detached_head_clean(self):
+        dir_path = os.path.join(
+            self.repo_root, "work_dir_is_detached")
+        env = Environment(dir_path)
+        env.switch_to("master")
+        env.prepare_working_dir()
+        assert_head_reference(
+            env, 'n/a', 'e8605fa39902b240081ffb1894af0d28af4378a7', True)
 
 
 if __name__ == '__main__':

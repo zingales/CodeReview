@@ -54,7 +54,11 @@ class Environment(object):
             stash_name = self.gen_stash_name(self.working_dir_id, cr_id)
             logging.debug(stash_name)
             self.starting_dirty = self.preserve_working_dir(stash_name)
-            self.starting_branch = self.repo.head.ref
+            logging.debug(dir(self.repo.head))
+            if self.repo.head.is_detached:
+                self.starting_branch = self.repo.head.commit
+            else:
+                self.starting_branch = self.repo.head.ref
         self.repo.git.checkout(cr_id)
         # self.history.append(gen_switch_event(cr_id))
 
@@ -87,4 +91,4 @@ class Environment(object):
         if self.starting_dirty:
             num = self.find_working_dir_stash()
             self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
-            self.starting_branch = None
+            self.starting_dirty = None
