@@ -14,7 +14,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def assert_head_reference(env, branch, hash, is_detached=False):
+def assert_head_detached(env, hash):
+    assert_head(env, 'n/a', hash, True)
+
+
+def assert_head_branch(env, branch, hash):
+    assert_head(env, branch, hash, False)
+
+
+def assert_head(env, branch, hash, is_detached):
     assert str(env.repo.head.commit) == hash, "head hash is not what was expected: Expected {0}, actual {1}".format(
         hash, env.repo.head.commit)
     if not is_detached:
@@ -61,7 +69,7 @@ class TestRepos(unittest.TestCase):
         env = Environment(dir_path)
         env.switch_to("branch_b")
         env.prepare_working_dir()
-        assert_head_reference(
+        assert_head_branch(
             env, 'master', 'e6a5ec02969059cd89375f60382c1ba11135dd08')
 
     def test_switching_with_clean_repo_with_stashes(self):
@@ -70,7 +78,7 @@ class TestRepos(unittest.TestCase):
         env = Environment(dir_path)
         env.switch_to("branch_b")
         env.prepare_working_dir()
-        assert_head_reference(
+        assert_head_branch(
             env, 'master', 'e6a5ec02969059cd89375f60382c1ba11135dd08')
 
     def test_detached_head_clean(self):
@@ -79,8 +87,15 @@ class TestRepos(unittest.TestCase):
         env = Environment(dir_path)
         env.switch_to("master")
         env.prepare_working_dir()
-        assert_head_reference(
-            env, 'n/a', 'e8605fa39902b240081ffb1894af0d28af4378a7', True)
+        assert_head_detached(env, 'e8605fa39902b240081ffb1894af0d28af4378a7')
+
+    def test_detached_head_dirty(self):
+        dir_path = os.path.join(
+            self.repo_root, "work_dir_is_detached_dirty")
+        env = Environment(dir_path)
+        env.switch_to("master")
+        env.prepare_working_dir()
+        assert_head_detached(env, 'e8605fa39902b240081ffb1894af0d28af4378a7')
 
 
 if __name__ == '__main__':
