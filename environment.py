@@ -34,6 +34,7 @@ class Environment(object):
         self.repo = Repo(git_path)
         # self.history = []
         self.starting_branch = None
+        self.starting_dirty = None
 
     def preserve_working_dir(self, stash_name):
         assert not self.repo.bare, "repo is bare"
@@ -52,7 +53,7 @@ class Environment(object):
         if self.starting_branch is None:
             stash_name = self.gen_stash_name(self.working_dir_id, cr_id)
             logging.debug(stash_name)
-            self.preserve_working_dir(stash_name)
+            self.starting_dirty = self.preserve_working_dir(stash_name)
             self.starting_branch = self.repo.head.ref
         self.repo.git.checkout(cr_id)
         # self.history.append(gen_switch_event(cr_id))
@@ -83,9 +84,7 @@ class Environment(object):
     def prepare_working_dir(self):
         self.repo.git.checkout(self.starting_branch)
         self.starting_branch = None
-        try:
+        if self.starting_dirty:
             num = self.find_working_dir_stash()
             self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
-        except ValueError:
-            # source branch was clean so there is nothing to unstash
-            pass
+            self.starting_branch = None
