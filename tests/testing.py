@@ -48,6 +48,19 @@ class TestRepos(unittest.TestCase):
         with self.assertRaises(AssertionError):
             env.preserve_working_dir("notneeded")
 
+    def test_switching_with_clean_repo(self):
+        dir_path = os.path.join(self.repo_root, "switch_from_clean")
+        env = Environment(dir_path)
+        env.switch_to("branch_b")
+        env.prepare_working_dir()
+
+    def test_switching_with_clean_repo_with_stashes(self):
+        dir_path = os.path.join(
+            self.repo_root, "switch_from_clean_with_stashes")
+        env = Environment(dir_path)
+        env.switch_to("branch_b")
+        env.prepare_working_dir()
+
 
 if __name__ == '__main__':
     unittest.main()

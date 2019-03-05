@@ -1,6 +1,7 @@
 import logging
 from git import Repo
 import re
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -59,20 +60,32 @@ class Environment(object):
     def gen_stash_name(self, source_id, destination_id):
         return "CR:{0}->{1}".format(source_id, destination_id)
 
-    def stash_name_to_stash_index(self, stash_prefix):
-        for line in self.repo.git.stash('list').split('\n'):
+    def find_working_dir_stash(self):
+        return self.stash_name_to_stash_index(
+            self.gen_stash_name(self.working_dir_id, ''))
 
+    def stash_name_to_stash_index(self, stash_prefix):
+        stash_response = self.repo.git.stash('list')
+        if len(stash_response) == 0:
+            raise ValueError("No stashes to be searched")
+
+        for line in stash_response.split('\n'):
+            # from IPython import embed
+            # embed()
             m = re.search(r"stash@\{(\d+)\}: (.+): (.*)", line)
             assert m, "error in matching git stash line:" + line
             if m.group(3).startswith(stash_prefix):
                 return m.group(1)
 
-        raise ArgumentError(
-            "Could not find a stash name that matched: " + stash_name)
+        raise ValueError(
+            "Could not find a stash name that matched: " + stash_prefix)
 
     def prepare_working_dir(self):
         self.repo.git.checkout(self.starting_branch)
         self.starting_branch = None
-        num = self.stash_name_to_stash_index(
-            self.gen_stash_name(self.working_dir_id, ''))
-        self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
+        try:
+            num = self.find_working_dir_stash()
+            self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
+        except ValueError:
+            # source branch was clean so there is nothing to unstash
+            pass

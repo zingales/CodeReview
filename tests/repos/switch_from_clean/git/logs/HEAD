@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 e6a5ec02969059cd89375f60382c1ba11135dd08 belle <belle@noemail.com> 1551817791 -0800	commit (initial): initial commit
+e6a5ec02969059cd89375f60382c1ba11135dd08 e6a5ec02969059cd89375f60382c1ba11135dd08 belle <belle@noemail.com> 1551817801 -0800	checkout: moving from master to branch_b
+e6a5ec02969059cd89375f60382c1ba11135dd08 0c7c90e81361838e1fe645467f0b8173a0d9ace5 belle <belle@noemail.com> 1551817824 -0800	commit: changed branch name
+0c7c90e81361838e1fe645467f0b8173a0d9ace5 e6a5ec02969059cd89375f60382c1ba11135dd08 belle <belle@noemail.com> 1551817829 -0800	checkout: moving from branch_b to master
