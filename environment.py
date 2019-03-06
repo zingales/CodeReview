@@ -27,6 +27,7 @@ class Environment(object):
     working_dir_id = "Work Dir"
 
     def __init__(self, git_path):
+        self.path = git_path
         assert os.path.isdir(git_path), "path provided is not a directory"
         assert os.path.exists(os.path.join(git_path, ".git")
                               ), "no git info in root folder"

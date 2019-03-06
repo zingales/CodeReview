@@ -2,15 +2,26 @@ import os
 import sys
 import logging
 import time
+from tkinter import Tk
 
 from environment import Environment
+from projectmanager import ProjectManager
+from configmanager import JsonConfigManager
+from gui import TkGui
+
 logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+CONFIG_FOLDER = "~/.CodeReview"
 
-if __name__ == "__main__":
+CONFIG_NAME = "config.json"
+
+I_AM_EVAN = False
+
+
+def old_school():
     code_path = sys.argv[1]
 
     env = Environment(code_path)
@@ -38,3 +49,14 @@ How to use:
             print(howto)
         else:
             env.switch_to(text)
+
+
+if __name__ == "__main__":
+    config = JsonConfigManager(os.path.expanduser(CONFIG_FOLDER), CONFIG_NAME)
+    if I_AM_EVAN:
+        old_school()
+    else:
+        pm = ProjectManager(config)
+        root = Tk()
+        my_gui = TkGui(root, pm)
+        root.mainloop()
