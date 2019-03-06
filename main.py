@@ -60,3 +60,5 @@ if __name__ == "__main__":
         root = Tk()
         my_gui = TkGui(root, pm)
         root.mainloop()
+        logger.info("Exiting")
+        config.save_to_file()

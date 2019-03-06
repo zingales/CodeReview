@@ -16,7 +16,11 @@ class ProjectManager(object):
         env = Environment(dir_path)
         self.projects.append(env)
         self.config.add_project(dir_path)
-        self.config.save_to_file()
 
     def list_projects(self):
         return [x.path for x in self.projects]
+
+    def get_env_from_path(self, path):
+        for env in self.projects:
+            if env.path == path:
+                return env

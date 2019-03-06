@@ -92,3 +92,8 @@ class Environment(object):
             num = self.find_working_dir_stash()
             self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
             self.starting_dirty = None
+
+    def fetch(self):
+        for remote in self.repo.remotes:
+            logger.debug("fetching: " + str(remote))
+            remote.fetch()
