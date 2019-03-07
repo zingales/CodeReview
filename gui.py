@@ -34,8 +34,10 @@ class TkGui(object):
                                command=self.load_project)
         btn_load_proj.grid(column=5, row=1)
         self.tab_control.pack(expand=1, fill='both')
-
         self.tabs = list()
+
+        for x in self.pm.list_projects():
+                self._load_project(x)
 
     def add_project_click(self):
         dir = filedialog.askdirectory()
@@ -53,10 +55,12 @@ class TkGui(object):
         if not selection:
             messagebox.showerror('Error', "No Project selected")
             return
+        return self._load_project(selection)
 
+    def _load_project(self, path):
         tab = ttk.Frame(self.tab_control)
-        self.tab_control.add(tab, text=os.path.basename(selection))
-        self.tabs.append(TabManager(tab, self.pm.get_env_from_path(selection)))
+        self.tab_control.add(tab, text=os.path.basename(path))
+        self.tabs.append(TabManager(tab, self.pm.get_env_from_path(path)))
 
 
 class TabManager(object):
