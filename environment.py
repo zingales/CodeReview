@@ -65,9 +65,18 @@ class Environment(object):
     def gen_stash_name(self, source_id, destination_id):
         return "CR:{0}->{1}".format(source_id, destination_id)
 
+    def current_branch(self):
+        try:
+            return self.repo.active_branch.name
+        except TypeError:
+            return "No Branch"
+
     def find_working_dir_stash(self):
         return self.stash_name_to_stash_index(
             self.gen_stash_name(self.working_dir_id, ''))
+
+    def get_branch_names(self):
+        return [h.name for h in self.repo.heads]
 
     def stash_name_to_stash_index(self, stash_prefix):
         stash_response = self.repo.git.stash('list')
@@ -86,9 +95,18 @@ class Environment(object):
             "Could not find a stash name that matched: " + stash_prefix)
 
     def prepare_working_dir(self):
+        if self.starting_branch is None:
+            raise ValueError(
+                "Cannot revert from an when we haven't switched to anything")
+
         self.repo.git.checkout(self.starting_branch)
         self.starting_branch = None
         if self.starting_dirty:
             num = self.find_working_dir_stash()
             self.repo.git.stash('pop', 'stash@{{{0}}}'.format(num))
             self.starting_dirty = None
+
+    def fetch(self):
+        for remote in self.repo.remotes:
+            logger.debug("fetching: " + str(remote))
+            remote.fetch()

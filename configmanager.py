@@ -46,3 +46,4 @@ class JsonConfigManager(object):
 
     def add_project(self, path):
         self.projects.append(path)
+        self.save_to_file()
