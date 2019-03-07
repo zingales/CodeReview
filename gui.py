@@ -1,7 +1,9 @@
-from tkinter import *
+# from tkinter import *
 from tkinter import ttk
+from tkinter.ttk import Button
+import os
 # import Combobox, Notebook, Frame
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Label, Entry
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,47 +15,27 @@ class TkGui(object):
     def __init__(self, window, project_manager):
         self.pm = project_manager
         window.title("CodeReview")
-        window.geometry('500x800')
+        window.geometry('600x400')
 
-        base_frame = ttk.Frame(window)
-        top_frame = ttk.Frame(base_frame)
-        top_frame.grid(column=0, row=0)
-        lbl = Label(top_frame, text="Choose Project", font=("Arial Bold", 20))
+        self.tab_control = ttk.Notebook(window)
+        tab1 = ttk.Frame(self.tab_control)
+        self.tab_control.add(tab1, text='Main')
+        lbl = Label(tab1, text="Choose Project", font=("Arial Bold", 20))
         lbl.grid(column=0, row=0)
-        # combo = ttk.Combobox(window)
-        # self.project_chooser = combo
-        # combo['values'] = self.pm.list_projects()
-        # combo.grid(column=2, row=0)
-        #
-        # btn = Button(window, text="Add Project",
-        #              command=self.add_project_click)
-        # btn.grid(column=5, row=0)
-        # btn_load_proj = Button(window, text="Load Project",
-        #                        command=self.load_project)
-        # btn_load_proj.grid(column=5, row=1)
+        combo = ttk.Combobox(tab1)
+        self.project_chooser = combo
+        combo['values'] = self.pm.list_projects()
+        combo.grid(column=2, row=0)
 
-        bottom_frame = ttk.Frame(base_frame)
-        bottom_frame.grid(column=0, row=2)
-        self.tab_control = ttk.Notebook(bottom_frame)
-        tab_control = self.tab_control
-        # tab1 = ttk.Frame(self.tab_control)
-        # self.tab_control.add(tab1, text='Info')
-        # self.tab_control.pack(expand=1, fill='both')
+        btn = Button(tab1, text="Add Project",
+                     command=self.add_project_click)
+        btn.grid(column=5, row=0)
+        btn_load_proj = Button(tab1, text="Load Project",
+                               command=self.load_project)
+        btn_load_proj.grid(column=5, row=1)
+        self.tab_control.pack(expand=1, fill='both')
 
-        tab1 = ttk.Frame(tab_control)
-        tab2 = ttk.Frame(tab_control)
-        tab_control.add(tab1, text='First')
-        tab_control.add(tab2, text='Second')
-        lbl1 = Label(tab1, text='label1')
-        lbl1.grid(column=0, row=0)
-        lbl2 = Label(tab2, text='label2')
-        lbl2.grid(column=0, row=0)
-
-        base_frame.pack()
         self.tabs = list()
-
-    def remove_selected_tab_from_view(self):
-        self.tab_control.forget(self.tab_control.select())
 
     def add_project_click(self):
         dir = filedialog.askdirectory()
@@ -73,7 +55,7 @@ class TkGui(object):
             return
 
         tab = ttk.Frame(self.tab_control)
-        self.tab_control.add(tab, text=selection)
+        self.tab_control.add(tab, text=os.path.basename(selection))
         self.tabs.append(TabManager(tab, self.pm.get_env_from_path(selection)))
 
 
@@ -82,6 +64,60 @@ class TabManager(object):
     def __init__(self, tab, env):
         self.tab = tab
         self.env = env
+        lbl = Label(self.tab, text="Project Path: {0}".format(
+            env.path), font=("Arial Bold", 10))
+        lbl.grid(column=0, row=0)
         refresh_button = Button(
-            self.tab, text="Refresh/Fetch", command=self.env.fetch)
-        refresh_button.grid(column=0, row=0)
+            self.tab, text="Fetch", command=self.fetch)
+        refresh_button.grid(column=2, row=0)
+        self.current_branch = Label(self.tab)
+        self.current_branch.grid(column=1, row=0)
+
+        lbl = Label(self.tab, text="Choose Branch To View")
+        lbl.grid(column=0, row=1)
+        self.branch_chooser = ttk.Combobox(self.tab)
+        self.branch_chooser.grid(column=1, row=1)
+
+        lbl = Label(self.tab, text="Choose Commit To View")
+        lbl.grid(column=0, row=2)
+        self.commit_entry = Entry(self.tab, width=20)
+        self.commit_entry.grid(column=1, row=2)
+        commit_button = Button(
+            self.tab, text="switch", command=self.switch)
+        commit_button.grid(column=0, row=3)
+        commit_button = Button(
+            self.tab, text="revert", command=self.revert)
+        commit_button.grid(column=0, row=4)
+
+        self.refresh()
+
+    def fetch(self):
+        self.env.fetch()
+        self.refresh()
+
+    def refresh(self):
+        names = self.env.get_branch_names()
+        names.insert(0, "")
+        self.branch_chooser['values'] = names
+        self.current_branch.configure(
+            text="Current Branch {0}".format(self.env.current_branch()))
+
+    def switch(self):
+        branch = self.branch_chooser.get()
+        if branch:
+            self.env.switch_to(branch)
+        else:
+            commit = self.commit_entry.get()
+            if not commit:
+                messagebox.showerror('Error', "No reference to switch to")
+            else:
+                self.env.switch_to(commit)
+        self.refresh()
+
+    def revert(self):
+        try:
+            self.env.prepare_working_dir()
+        except ValueError:
+            messagebox.showerror(
+                'Error', "Cannot revert if we havne't switched to anything")
+        self.refresh()

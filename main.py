@@ -59,6 +59,7 @@ if __name__ == "__main__":
         pm = ProjectManager(config)
         root = Tk()
         my_gui = TkGui(root, pm)
+        root.update()
         root.mainloop()
         logger.info("Exiting")
         config.save_to_file()
